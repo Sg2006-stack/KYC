@@ -21,7 +21,7 @@ app.add_middleware(
 # Paths
 BASE_DIR = Path(__file__).parent
 UPLOAD_DIR = BASE_DIR / "uploads"
-ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+ALLOWED_EXTENSIONS = {"jpeg"}
 
 for folder in ["aadhaar", "pan", "selfie"]:
     (UPLOAD_DIR / folder).mkdir(parents=True, exist_ok=True)
@@ -43,7 +43,7 @@ def validate_image(file: UploadFile):
 
     ext = file.filename.rsplit(".", 1)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
-        raise HTTPException(status_code=400, detail="Invalid image format")
+        raise HTTPException(status_code=400, detail="Only JPEG images are accepted")
 
     try:
         Image.open(file.file).verify()

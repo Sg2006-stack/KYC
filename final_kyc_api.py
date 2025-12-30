@@ -10,6 +10,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from bson import ObjectId
 
+from fastapi.responses import HTMLResponse
+
 from KYC.database import users
 from KYC.save_kyc import save_kyc
 from KYC.kyc_input_checks import validate_kyc_slots
@@ -38,7 +40,7 @@ app.add_middleware(
 
 logger = logging.getLogger("kyc")
 
-_ALLOWED_EXTS = {"jpg", "jpeg", "png"}
+_ALLOWED_EXTS = {"jpeg"}
 
 
 # ---------- HELPERS ----------
@@ -105,6 +107,14 @@ def serialize(record: dict):
 
 
 # ---------- ROUTES ----------
+@app.get("/", response_class=HTMLResponse)
+def serve_ui():
+    html_path = Path(__file__).parent / "index.html"
+    if not html_path.exists():
+        return "<h1>index.html not found</h1>"
+    return html_path.read_text(encoding="utf-8")
+
+
 @app.get("/get-kyc/{email}")
 def get_kyc(email: str):
     record = users.find_one({"email": email}, {"_id": 0})

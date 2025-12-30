@@ -2,6 +2,8 @@ import sys
 import io
 import logging
 import uuid
+import os
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -74,6 +76,41 @@ def _validate_image_bytes(field: str, filename: str, content_type: str, content:
     return ext
 
 
+def send_sms_notification(phone: str, report: dict) -> dict:
+    """Send SMS via Twilio. Works on Vercel if env vars are set."""
+    
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    from_phone = os.getenv("TWILIO_PHONE_NUMBER")
+    
+    # Validate phone
+    if not phone or not re.match(r"^\+?[1-9]\d{1,14}$", phone.strip()):
+        return {"sent": False, "detail": f"Invalid phone format: {phone}. Use +919876543210"}
+    
+    # Check config
+    if not account_sid or not auth_token or not from_phone:
+        return {"sent": False, "detail": "Twilio not configured. Add TWILIO_* env vars in Vercel settings."}
+    
+    # Create message
+    status = report.get("status", "UNKNOWN")
+    similarity = report.get("similarity", "N/A")
+    message = f"KYC Verification Complete\nStatus: {status}\nFace Match: {similarity}"
+    
+    try:
+        from twilio.rest import Client
+        client = Client(account_sid, auth_token)
+        msg = client.messages.create(
+            body=message,
+            from_=from_phone,
+            to=phone
+        )
+        return {"sent": True, "message_sid": msg.sid, "detail": f"SMS sent to {phone}"}
+    except ImportError:
+        return {"sent": False, "detail": "Twilio not installed. Add 'twilio' to requirements.txt"}
+    except Exception as e:
+        return {"sent": False, "detail": f"SMS failed: {type(e).__name__}: {str(e)}"}
+
+
 # ---------- ROUTES ----------
 @app.get("/", response_class=HTMLResponse)
 def serve_ui():
@@ -88,7 +125,8 @@ async def verify_kyc(
     aadhaar: UploadFile = File(...),
     pan: UploadFile = File(...),
     selfie: UploadFile = File(...),
-    email: str = Form(...)
+    email: str = Form(...),
+    phone: str = Form(...)
 ):
     """
     Serverless Demo Version:
@@ -108,6 +146,13 @@ async def verify_kyc(
     pan_ext = _validate_image_bytes("pan", pan.filename, pan.content_type, pan_bytes)
     selfie_ext = _validate_image_bytes("selfie", selfie.filename, selfie.content_type, selfie_bytes)
 
+    # ---------- SEND SMS NOTIFICATION ----------
+    sms_result = send_sms_notification(phone, {
+        "status": "VERIFIED (DEMO)",
+        "similarity": "N/A (Demo Mode)",
+        "note": "File validation successful"
+    })
+
     # Return demo response (without ML processing on Vercel)
     response = {
         "status": "SUCCESS",
@@ -118,11 +163,13 @@ async def verify_kyc(
             "selfie": selfie.filename
         },
         "email": email,
+        "phone": phone,
         "note": "This is a demo deployment. Full ML pipeline (OCR, Face Recognition, Deepfake Detection) requires dedicated server with GPU support.",
         "email_notification": {
             "sent": False,
             "detail": "Email notifications disabled in serverless mode"
-        }
+        },
+        "sms_notification": sms_result
     }
 
     return response

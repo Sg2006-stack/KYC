@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KYC Verification Portal</title>
+<style>
+    :root{
+        --bg: #020617;
+        --bg-elevated: rgba(15,23,42,0.92);
+        --accent: #00e6ff;
+        --accent-soft: rgba(56,189,248,0.18);
+        --accent-strong: #0ea5e9;
+        --border-subtle: #1f2937;
+        --text-main: #e5e7eb;
+        --text-muted: #9ca3af;
+        --danger: #f97373;
+    }
+
+    *{
+        box-sizing:border-box;
+    }
+
+    body{
+        margin:0;
+        min-height:100vh;
+        font-family:"Poppins", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        background:
+            radial-gradient(circle at top left, rgba(56,189,248,0.15) 0, transparent 55%),
+            radial-gradient(circle at bottom right, rgba(59,130,246,0.15) 0, transparent 55%),
+            linear-gradient(135deg,#020617,#020617 40%,#020617 70%,#030712 100%);
+        color:var(--text-main);
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+    }
+
+    .page-shell{
+        width:100%;
+        max-width:1200px;
+        padding:24px 20px 40px;
+        display:flex;
+        flex-direction:column;
+        gap:36px;
+    }
+
+    .nav{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:16px;
+    }
+
+    .nav-left{
+        display:flex;
+        align-items:center;
+        gap:10px;
+    }
+
+    .nav-logo{
+        width:32px;
+        height:32px;
+        border-radius:10px;
+        background:conic-gradient(from 180deg,var(--accent),#6366f1,#22c55e,var(--accent));
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        box-shadow:0 0 20px rgba(56,189,248,0.45);
+        font-size:18px;
+        cursor:pointer;
+        transition:transform 0.3s ease, box-shadow 0.3s ease, filter 0.3s ease;
+    }
+
+    .nav-logo:hover{
+        transform:scale(1.08) rotate(5deg);
+        box-shadow:0 0 32px rgba(56,189,248,0.65);
+        filter:brightness(1.15);
+    }
+
+    .nav-title{
+        font-weight:600;
+        letter-spacing:0.02em;
+        transition:color 0.2s ease;
+        cursor:pointer;
+    }
+
+    .nav-left:hover .nav-title{
+        color:var(--accent);
+    }
+
+    .nav-pill{
+        padding:6px 14px;
+        border-radius:999px;
+        background:rgba(15,23,42,0.8);
+        border:1px solid rgba(148,163,184,0.4);
+        font-size:11px;
+        text-transform:uppercase;
+        letter-spacing:0.12em;
+        color:var(--text-muted);
+        transition:all 0.25s ease;
+        cursor:default;
+    }
+
+    .nav-pill:hover{
+        background:rgba(15,23,42,1);
+        border-color:rgba(148,163,184,0.65);
+        color:var(--text-main);
+        transform:translateY(-1px);
+    }
+
+    .main-layout{
+        display:grid;
+        grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);
+        gap:40px;
+        align-items:stretch;
+    }
+
+    .hero{
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        gap:20px;
+        padding-right:20px;
+    }
+
+    .hero-badge{
+        display:inline-flex;
+        align-items:center;
+        gap:8px;
+        padding:6px 12px;
+        border-radius:999px;
+        background:rgba(15,23,42,0.9);
+        border:1px solid rgba(55,65,81,0.9);
+        font-size:11px;
+        text-transform:uppercase;
+        letter-spacing:0.14em;
+        color:var(--accent-strong);
+        width:max-content;
+        transition:all 0.3s ease;
+        cursor:pointer;
+    }
+
+    .hero-badge:hover{
+        background:rgba(15,23,42,1);
+        border-color:var(--accent);
+        transform:translateX(4px);
+        box-shadow:0 4px 12px rgba(56,189,248,0.25);
+    }
+
+    .hero-title{
+        font-size:34px;
+        line-height:1.2;
+        font-weight:650;
+    }
+
+    .hero-title span{
+        background:linear-gradient(135deg,var(--accent),#60a5fa);
+        -webkit-background-clip:text;
+        background-clip:text;
+        color:transparent;
+    }
+
+    .hero-copy{
+        font-size:14px;
+        line-height:1.7;
+        color:var(--text-muted);
+        max-width:420px;
+    }
+
+    .hero-metadata{
+        display:flex;
+        flex-wrap:wrap;
+        gap:14px 26px;
+        margin-top:4px;
+        font-size:11px;
+        color:var(--text-muted);
+    }
+
+    .hero-metadata strong{
+        color:var(--text-main);
+        font-weight:500;
+    }
+
+    .card{
+        background:var(--bg-elevated);
+        border-radius:18px;
+        padding:24px 24px 20px;
+        border:1px solid rgba(148,163,184,0.35);
+        box-shadow:0 20px 60px rgba(15,23,42,0.7);
+        position:relative;
+        overflow:hidden;
+        transition:transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+    }
+
+    .card:hover{
+        transform:translateY(-4px);
+        box-shadow:0 28px 80px rgba(15,23,42,0.85), 0 0 40px rgba(56,189,248,0.15);
+        border-color:rgba(148,163,184,0.5);
+    }
+
+    .card::before{
+        content:"";
+        position:absolute;
+        inset:-40%;
+        background:radial-gradient(circle at top,rgb(56,189,248,0.12),transparent 55%);
+        opacity:0.8;
+        pointer-events:none;
+    }
+
+    .card-inner{
+        position:relative;
+        z-index:1;
+    }
+
+    .card-header{
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap:10px;
+        margin-bottom:16px;
+    }
+
+    .card-title{
+        font-size:18px;
+        font-weight:600;
+        display:flex;
+        align-items:center;
+        gap:8px;
+        color:var(--accent);
+    }
+
+    .card-sub{
+        font-size:12px;
+        color:var(--text-muted);
+    }
+
+    .card-badge{
+        padding:4px 10px;
+        border-radius:999px;
+        background:rgba(22,163,74,0.18);
+        border:1px solid rgba(34,197,94,0.6);
+        font-size:11px;
+        color:#bbf7d0;
+        display:flex;
+        align-items:center;
+        gap:6px;
+        transition:all 0.25s ease;
+        cursor:default;
+    }
+
+    .card-badge:hover{
+        background:rgba(22,163,74,0.28);
+        border-color:rgba(34,197,94,0.8);
+        transform:scale(1.05);
+    }
+
+    .form-grid{
+        display:grid;
+        grid-template-columns:1fr;
+        gap:10px 16px;
+        margin-top:6px;
+    }
+
+    label{
+        font-size:12px;
+        color:var(--text-muted);
+        display:block;
+        margin-top:4px;
+        margin-bottom:4px;
+        transition:color 0.2s ease;
+        cursor:pointer;
+    }
+
+    label:hover{
+        color:var(--text-main);
+    }
+
+    .field-hint{
+        font-size:11px;
+        color:var(--text-muted);
+        margin-top:2px;
+    }
+
+    input[type="file"],
+    input[type="text"]{
+        width:100%;
+        padding:9px 10px;
+        margin:0;
+        background:#020617;
+        border:1px solid var(--border-subtle);
+        color:var(--text-main);
+        border-radius:8px;
+        font-size:13px;
+        outline:none;
+        transition:border-color .2s ease, box-shadow .2s ease, background .2s ease, transform .08s ease;
+    }
+
+    input[type="file"]::file-selector-button{
+        background:rgba(15,23,42,0.95);
+        border:none;
+        color:var(--text-muted);
+        padding:6px 10px;
+        margin-right:10px;
+        border-radius:6px;
+        cursor:pointer;
+        font-size:11px;
+        border:1px solid rgba(31,41,55,0.9);
+        transition:background .2s ease, color .2s ease, border-color .2s ease;
+    }
+
+    input[type="file"]::file-selector-button:hover{
+        background:rgba(15,23,42,1);
+        color:var(--text-main);
+        border-color:rgba(55,65,81,0.9);
+    }
+
+    input[type="file"]:hover,
+    input[type="text"]:hover{
+        border-color:rgba(56,189,248,0.7);
+    }
+
+    input[type="file"]:focus,
+    input[type="text"]:focus{
+        border-color:var(--accent);
+        box-shadow:0 0 0 1px rgba(56,189,248,0.6);
+        transform:translateY(-0.5px);
+    }
+
+    .submit-row{
+        margin-top:16px;
+    }
+
+    button{
+        width:100%;
+        padding:11px 12px;
+        background:linear-gradient(135deg,var(--accent),#3b82f6);
+        border:none;
+        border-radius:999px;
+        font-size:14px;
+        color:white;
+        cursor:pointer;
+        font-weight:600;
+        letter-spacing:0.03em;
+        text-transform:uppercase;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:8px;
+        box-shadow:0 18px 35px rgba(56,189,248,0.35);
+        transition:transform 0.14s ease, box-shadow 0.18s ease, filter 0.2s ease;
+    }
+
+    button span.icon{
+        font-size:16px;
+    }
+
+    button:hover{
+        transform:translateY(-1px) scale(1.01);
+        box-shadow:0 22px 45px rgba(56,189,248,0.45);
+        filter:brightness(1.04);
+    }
+
+    button:active{
+        transform:translateY(0);
+        box-shadow:0 10px 24px rgba(56,189,248,0.35);
+    }
+
+    #loader{
+        display:none;
+        margin-top:14px;
+        text-align:center;
+        font-size:12px;
+        color:var(--text-muted);
+    }
+
+    .spinner{
+        width:30px;
+        height:30px;
+        border:3px solid rgba(56,189,248,0.6);
+        border-top-color:transparent;
+        border-radius:50%;
+        animation:spin 0.8s linear infinite;
+        margin:0 auto 6px;
+    }
+
+    #response-box{
+        background:rgba(15,23,42,0.98);
+        padding:12px;
+        border-radius:10px;
+        margin-top:16px;
+        display:none;
+        white-space:pre-wrap;
+        font-size:12px;
+        border:1px solid rgba(55,65,81,0.9);
+        max-height:200px;
+        overflow:auto;
+    }
+
+    .response-label{
+        font-size:11px;
+        text-transform:uppercase;
+        letter-spacing:0.14em;
+        color:var(--text-muted);
+        margin-bottom:6px;
+        transition:color 0.2s ease;
+    }
+
+    #response-box-wrapper:hover .response-label{
+        color:var(--accent-strong);
+    }
+
+    #response-box-wrapper{
+        transition:all 0.25s ease;
+        cursor:default;
+    }
+
+    #response-box-wrapper:hover{
+        transform:translateY(-2px);
+    }
+
+    .footer-hint{
+        margin-top:10px;
+        font-size:11px;
+        color:var(--text-muted);
+        text-align:left;
+    }
+
+    .status-banner{
+        margin-top:12px;
+        padding:10px 12px;
+        border-radius:10px;
+        border:1px solid rgba(55,65,81,0.9);
+        background:rgba(15,23,42,0.95);
+        font-size:12px;
+        color:var(--text-main);
+        display:none;
+    }
+
+    .status-banner.good{
+        border-color:rgba(34,197,94,0.55);
+        background:rgba(22,163,74,0.12);
+    }
+
+    .status-banner.bad{
+        border-color:rgba(239,68,68,0.55);
+        background:rgba(239,68,68,0.10);
+    }
+
+    .status-banner code{
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: 11px;
+        color: var(--text-main);
+    }
+
+    @keyframes fadeIn{
+        from{opacity:0; transform: translateY(14px);}
+        to{opacity:1; transform: translateY(0);}
+    }
+
+    @keyframes spin{to{transform:rotate(360deg);} }
+
+    @media (max-width:900px){
+        .main-layout{
+            grid-template-columns:1fr;
+            gap:26px;
+        }
+
+        .hero{
+            padding-right:0;
+        }
+
+        .hero-title{
+            font-size:26px;
+        }
+
+        .page-shell{
+            padding-top:18px;
+        }
+    }
+
+    @media (max-width:520px){
+        .card{
+            padding:20px 16px 18px;
+        }
+
+        .nav-title{
+            font-size:14px;
+        }
+    }
+
+</style>
+</head>
+<body>
+
+<div class="page-shell">
+    <header class="nav">
+        <div class="nav-left">
+            <div class="nav-logo">🔐</div>
+            <div>
+                <div class="nav-title">AI-Powered KYC Platform</div>
+                <div style="font-size:11px; color:var(--text-muted);">Intelligent document verification & biometric analysis</div>
+            </div>
+        </div>
+        <div class="nav-pill">OCR • FACE RECOGNITION • DEEPFAKE DETECTION</div>
+    </header>
+
+    <main class="main-layout">
+        <section class="hero">
+            <div class="hero-badge">
+                <span>AI Models Active</span>
+                <span style="width:4px; height:4px; border-radius:999px; background:#22c55e;"></span>
+                <span>Neural Network v2.4</span>
+            </div>
+            <h1 class="hero-title">
+                AI-powered identity verification
+                <br />
+                <span>with machine learning precision.</span>
+            </h1>
+            <p class="hero-copy">
+                Advanced KYC verification using deep learning OCR, facial recognition, and liveness detection. 
+                Automatically extracts data from Aadhaar & PAN, validates authenticity, and matches biometric signatures in real-time.
+            </p>
+            <div class="hero-metadata">
+                <div><strong>98.7% accuracy</strong> document verification with CNN models</div>
+                <div><strong>Real-time OCR</strong> powered by Tesseract & custom ML pipeline</div>
+                <div><strong>Face matching</strong> using deep neural networks (FaceNet/DeepFace)</div>
+            </div>
+        </section>
+
+        <section class="card" aria-label="KYC verification form">
+            <div class="card-inner">
+                <div class="card-header">
+                    <div>
+                        <div class="card-title">AI Verification Engine <span>#ml-v2.4</span></div>
+                        <div class="card-sub">Upload documents for intelligent OCR extraction, face matching, and authenticity verification.</div>
+                    </div>
+                    <div class="card-badge">
+                        <span style="width:6px;height:6px;border-radius:999px;background:#22c55e;"></span>
+                        ML Models Ready
+                    </div>
+                </div>
+
+                <form id="kycForm" enctype="multipart/form-data">
+                    <div id="form-status" class="status-banner" role="status" aria-live="polite" style="margin-top:0;"></div>
+                    <div id="email-status" class="status-banner" role="status" aria-live="polite" style="margin-top:10px;"></div>
+
+                    <div class="form-grid">
+                        <div>
+                            <label for="aadhaar">Aadhaar document</label>
+                            <input id="aadhaar" type="file" name="aadhaar" required>
+                            <div class="field-hint">Front side scan or PDF export.</div>
+                        </div>
+
+                        <div>
+                            <label for="pan">PAN document</label>
+                            <input id="pan" type="file" name="pan" required>
+                            <div class="field-hint">High-resolution capture recommended.</div>
+                        </div>
+
+                        <div>
+                            <label for="selfie">Selfie / liveness frame</label>
+                            <input id="selfie" type="file" name="selfie" required>
+                            <div class="field-hint">Ensure good lighting and a clear face. AI will check for deepfakes.</div>
+                        </div>
+
+                        <div>
+                            <label for="email">Email for verification report</label>
+                            <input id="email" type="text" name="email" placeholder="user@example.com" required>
+                            <div class="field-hint">ML confidence scores and extracted data will be sent here.</div>
+                        </div>
+
+                        <div style="margin-top:12px; padding:10px; background:rgba(34,197,94,0.08); border:1px solid rgba(34,197,94,0.3); border-radius:8px;">
+                            <div style="font-size:11px; text-transform:uppercase; letter-spacing:0.1em; color:var(--text-muted); margin-bottom:6px;">AI Models Active:</div>
+                            <div style="display:flex; gap:8px; flex-wrap:wrap; font-size:11px;">
+                                <span style="padding:3px 8px; background:rgba(59,130,246,0.2); border-radius:4px; color:#93c5fd;">OCR Engine</span>
+                                <span style="padding:3px 8px; background:rgba(168,85,247,0.2); border-radius:4px; color:#d8b4fe;">Face Recognition</span>
+                                <span style="padding:3px 8px; background:rgba(236,72,153,0.2); border-radius:4px; color:#f9a8d4;">Liveness Detection</span>
+                                <span style="padding:3px 8px; background:rgba(239,68,68,0.2); border-radius:4px; color:#fca5a5;">🛡️ Deepfake Detector</span>
+                                <span style="padding:3px 8px; background:rgba(34,197,94,0.2); border-radius:4px; color:#86efac;">Document Classifier</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="submit-row">
+                        <button type="submit">
+                            <span class="icon">▶</span>
+                            <span>Verify KYC</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div id="loader">
+                    <div class="spinner"></div>
+                    <p>Processing your KYC session&hellip;</p>
+                </div>
+
+                <div class="footer-hint">All documents are processed through our ML pipeline and deleted after analysis. No training data is collected.</div>
+
+                <div id="response-box-wrapper" style="margin-top:14px; display:none;">
+                    <div class="response-label">Raw API response</div>
+                    <pre id="response-box"></pre>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+
+<script>
+(function(){
+    const allowedExt = {"jpg":true,"jpeg":true,"png":true};
+    const fileInputs = [
+        { id: "aadhaar", label: "Aadhaar" },
+        { id: "pan", label: "PAN" },
+        { id: "selfie", label: "Selfie" },
+    ];
+
+    function getFormStatus(){
+        return document.getElementById("form-status");
+    }
+
+    function showStatus(kind, messageHtml){
+        const el = getFormStatus();
+        if(!el) return;
+        el.style.display = "block";
+        el.className = "status-banner";
+        if(kind === "bad") el.classList.add("bad");
+        if(kind === "good") el.classList.add("good");
+        el.innerHTML = messageHtml;
+        try{
+            el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }catch(e){}
+    }
+
+    function popup(message){
+        // Show alert for validation errors
+        try{
+            window.alert(message);
+        }catch(e){}
+    }
+
+    function clearStatus(){
+        const el = getFormStatus();
+        if(!el) return;
+        el.style.display = "none";
+        el.className = "status-banner";
+        el.textContent = "";
+    }
+
+    function validateSingleFile(inputId, label){
+        const el = document.getElementById(inputId);
+        const file = el && el.files ? el.files[0] : null;
+        if(!file){
+            return { ok:false, kind:"missing", message: label + " is required." };
+        }
+        const name = (file.name || "").toLowerCase();
+        const ext = name.indexOf(".") >= 0 ? name.split(".").pop() : "";
+        const mime = (file.type || "").toLowerCase();
+
+        const extOk = !!allowedExt[ext];
+        const mimeOk = (mime.indexOf("image/") === 0) || mime === "";
+
+        if(!extOk || !mimeOk){
+            return {
+                ok:false,
+                kind:"format",
+                message:
+                    label + " must be an image (<code>.jpg</code>, <code>.jpeg</code>, <code>.png</code>). You selected: <code>" +
+                    (file.name || "unknown") +
+                    "</code>"
+            };
+        }
+        return { ok:true };
+    }
+
+    // Immediate validation when user chooses a file
+    for(var i=0;i<fileInputs.length;i++){
+        (function(item){
+            const el = document.getElementById(item.id);
+            if(!el) return;
+            el.addEventListener("change", function(){
+                const r = validateSingleFile(item.id, item.label);
+                if(!r.ok){
+                    showStatus("bad", r.message);
+                    if(r.kind === "format"){
+                        popup("Wrong file format. Please upload JPG/JPEG/PNG only.");
+                    }
+                    // Clear invalid selection so user must pick again
+                    try{ el.value = ""; }catch(e){}
+                } else {
+                    clearStatus();
+                }
+            });
+        })(fileInputs[i]);
+    }
+
+    document.getElementById("kycForm").onsubmit = async function(e){
+        e.preventDefault();
+        clearStatus();
+
+        for(var j=0;j<fileInputs.length;j++){
+            var it = fileInputs[j];
+            var r2 = validateSingleFile(it.id, it.label);
+            if(!r2.ok){
+                showStatus("bad", r2.message);
+                // Popup ONLY for wrong file format, not for missing files
+                if(r2.kind === "format"){
+                    popup("Wrong file format. Please upload JPG/JPEG/PNG only.");
+                }
+                return;
+            }
+        }
+
+        var loader = document.getElementById("loader");
+        if(loader) loader.style.display = "block";
+
+        var resArea = document.getElementById("response-box");
+        var resWrapper = document.getElementById("response-box-wrapper");
+        if(resArea) resArea.style.display = "none";
+        if(resWrapper) resWrapper.style.display = "none";
+
+        var emailStatus = document.getElementById("email-status");
+        if(emailStatus){
+            emailStatus.style.display="none";
+            emailStatus.className = "status-banner";
+            emailStatus.textContent = "";
+        }
+
+        var formData = new FormData(e.target);
+        var res;
+        try{
+            res = await fetch("http://127.0.0.1:8000/kyc-verify",{ method:"POST", body:formData });
+        }catch(err){
+            if(loader) loader.style.display = "none";
+            showStatus("bad", "Verification service is not reachable. Please start the backend and open this page via a local server (not file-open). ");
+            // No popup here: only show popups for format errors.
+            return;
+        }
+
+        var data = null;
+        try{ data = await res.json(); }catch(err2){ data = { error: "Server returned a non-JSON response.", status: res.status }; }
+
+        if(loader) loader.style.display = "none";
+
+        if(!res.ok){
+            // User-friendly messaging (do NOT show raw FastAPI detail)
+            var userMsg = "Something went wrong. Please try again.";
+
+            // Popup ONLY for server-side format errors
+            var shouldPopup = false;
+
+            if(res.status === 400){
+                var serverMsg = (data && data.detail && data.detail.message) ? String(data.detail.message) : "";
+                var field = (data && data.detail && data.detail.field) ? String(data.detail.field) : "";
+
+                // These are the server-side format validation errors we DO want to popup.
+                if(serverMsg === "Invalid file format" || serverMsg === "Invalid content type" || serverMsg === "Corrupted or non-image file"){
+                    shouldPopup = true;
+                    if(field){
+                        userMsg = "Wrong file format uploaded for " + field.toUpperCase() + ". Please upload JPG/JPEG/PNG only.";
+                    } else {
+                        userMsg = "Wrong file format. Please upload JPG/JPEG/PNG only.";
+                    }
+                } else {
+                    // For mismatched uploads / OCR failures: show banner only (no popup)
+                    userMsg = "Wrong document uploaded. Please upload Aadhaar in Aadhaar, PAN in PAN, and your face selfie in Selfie.";
+                }
+            } else if(res.status === 413){
+                userMsg = "File too large. Please upload a smaller image.";
+            } else if(res.status >= 500){
+                userMsg = "Server error. Please try again in a moment.";
+            }
+
+            showStatus("bad", userMsg);
+            if(shouldPopup){
+                popup(userMsg);
+            }
+        }
+
+        if(resArea) resArea.style.display = "block";
+        if(resWrapper) resWrapper.style.display = "block";
+        if(resArea) resArea.textContent = JSON.stringify(data, null, 2);
+
+        if(emailStatus && data && data.email_notification){
+            var notif = data.email_notification;
+            if(notif.sent === true){
+                emailStatus.style.display="block";
+                emailStatus.classList.add("good");
+                emailStatus.textContent = "Email sent successfully to the provided address.";
+            } else {
+                emailStatus.style.display="block";
+                emailStatus.classList.add("bad");
+                emailStatus.textContent = "Email NOT sent: " + (notif.detail || "Unknown SMTP error");
+            }
+        }
+    };
+})();
+</script>
+
+</body>
+</html>
+
+
+

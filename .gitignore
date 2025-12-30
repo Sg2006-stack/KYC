@@ -1,1 +1,15 @@
-!.env
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+api/__pycache__/
+
+# User uploads
+uploads/
+
+# Database files
+*.db
+
+# Logs
+*.log

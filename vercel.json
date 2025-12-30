@@ -1,15 +1,8 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "final_kyc_api.py",
-      "use": "@vercel/python"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "final_kyc_api.py"
+      "source": "/(.*)",
+      "destination": "/api/index"
     }
   ]
 }

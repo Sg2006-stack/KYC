@@ -45,8 +45,9 @@ def send_kyc_sms(
     auth_token = os.getenv("TWILIO_AUTH_TOKEN")
     from_phone = os.getenv("TWILIO_PHONE_NUMBER")
 
-    # Validate phone number format
-    if not to_phone or not re.match(r"^\+?[1-9]\d{1,14}$", to_phone.strip()):
+    # Validate and normalize phone number format
+    clean_phone = to_phone.strip().replace(" ", "").replace("-", "").replace("(", "").replace(")", "")
+    if not clean_phone or not re.match(r"^\+?[1-9]\d{1,14}$", clean_phone):
         return {"sent": False, "detail": f"Invalid phone number format: {to_phone!r}. Use format: +919876543210"}
 
     if not account_sid or not auth_token or not from_phone:
@@ -73,7 +74,7 @@ def send_kyc_sms(
         msg = client.messages.create(
             body=message,
             from_=from_phone,
-            to=to_phone
+            to=clean_phone
         )
         
         return {

@@ -125,7 +125,6 @@ async def verify_kyc(
     aadhaar: UploadFile = File(...),
     pan: UploadFile = File(...),
     selfie: UploadFile = File(...),
-    email: str = Form(...),
     phone: str = Form(...)
 ):
     """
@@ -162,13 +161,8 @@ async def verify_kyc(
             "pan": pan.filename,
             "selfie": selfie.filename
         },
-        "email": email,
         "phone": phone,
         "note": "This is a demo deployment. Full ML pipeline (OCR, Face Recognition, Deepfake Detection) requires dedicated server with GPU support.",
-        "email_notification": {
-            "sent": False,
-            "detail": "Email notifications disabled in serverless mode"
-        },
         "sms_notification": sms_result
     }
 

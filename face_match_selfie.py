@@ -1,10 +1,18 @@
-﻿import cv2
-import numpy as np
-import face_recognition
+﻿import numpy as np
 from typing import Optional, Tuple, Dict, Any
+def run_face_match():
+    try:
+        import cv2
+        import face_recognition
+    except ImportError:
+        return {
+            "status": "disabled",
+            "reason": "Face recognition not available in this environment"
+        }
 
 
 def preprocess_keep_aspect(image_path: str, max_side: int = 800) -> Optional[np.ndarray]:
+    import cv2
     img = cv2.imread(image_path)
     if img is None:
         return None

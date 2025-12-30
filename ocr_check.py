@@ -1,41 +1,111 @@
-import cv2
-import pytesseract
-from PIL import Image
+from pathlib import Path
 import re
-# Set Tesseract path (Windows only)
-pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-# image_path = r"C:\Users\Arnab\OneDrive\Desktop\code\pythonprojects\KYC\uploads\aadhaar\a653a7cc-6021-4319-b299-9580c2f11126.jpg"
-def extract_text(image_path):
-    img = cv2.imread(image_path)
+
+
+def _require_ocr_libs():
+    """
+    Safely import OCR-related libraries.
+    Returns (cv2, pytesseract) or (None, None) if unavailable.
+    """
+    try:
+        import cv2
+        import pytesseract
+        return cv2, pytesseract
+    except ImportError:
+        return None, None
+
+
+def extract_text_from_image(image_path):
+    """
+    Extract raw text from an image using OCR.
+    """
+    cv2, pytesseract = _require_ocr_libs()
+    if cv2 is None or pytesseract is None:
+        return {
+            "status": "disabled",
+            "reason": "OCR not available in this environment",
+            "text": ""
+        }
+
+    img = cv2.imread(str(image_path))
     if img is None:
-        return ""
+        return {
+            "error": "Could not read image",
+            "text": ""
+        }
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    gray = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
 
     text = pytesseract.image_to_string(gray)
-    # if result is empty or too short, try additional preprocessing
-    if len(re.sub(r'\s+', '', text)) < 3:
-        # upscale
-        h, w = gray.shape[:2]
-        scale = 2
-        large = cv2.resize(gray, (w*scale, h*scale), interpolation=cv2.INTER_CUBIC)
-        # denoise and sharpen
-        large = cv2.bilateralFilter(large, 9, 75, 75)
-        # adaptive threshold
-        th = cv2.adaptiveThreshold(large, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                   cv2.THRESH_BINARY, 11, 2)
-
-        # try with whitelist (PAN is alphanumeric uppercase)
-        config = '--psm 6 --oem 3 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-        text2 = pytesseract.image_to_string(th, config=config)
-        if len(re.sub(r'\s+', '', text2)) >= 3:
-            return text2
-
-        # fallback: try simple resizing and psm 7
-        text3 = pytesseract.image_to_string(large, config='--psm 7')
-        if len(re.sub(r'\s+', '', text3)) >= 3:
-            return text3
-
-    return text
+    return {
+        "status": "success",
+        "text": text.strip()
+    }
 
 
+def extract_numbers(text):
+    """
+    Extract numeric sequences from OCR text (useful for IDs).
+    """
+    if not text:
+        return []
+
+    return re.findall(r"\d+", text)
+
+
+def extract_pan_like(text):
+    """
+    Extract PAN-like patterns: 5 letters + 4 digits + 1 letter
+    Example: ABCDE1234F
+    """
+    if not text:
+        return []
+
+    pattern = r"[A-Z]{5}[0-9]{4}[A-Z]"
+    return re.findall(pattern, text.upper())
+
+
+def extract_aadhaar_like(text):
+    """
+    Extract Aadhaar-like numbers: 12-digit numeric sequences
+    """
+    if not text:
+        return []
+
+    pattern = r"\b\d{4}\s?\d{4}\s?\d{4}\b"
+    return re.findall(pattern, text)
+
+
+def run_ocr_checks(image_path):
+    """
+    Main OCR pipeline used by KYC.
+    """
+    image_path = Path(image_path)
+    if not image_path.exists():
+        return {
+            "error": "Image file not found",
+            "status": "failed"
+        }
+
+    ocr_result = extract_text_from_image(image_path)
+
+    if ocr_result.get("status") != "success":
+        return ocr_result
+
+    text = ocr_result.get("text", "")
+
+    return {
+        "status": "success",
+        "raw_text": text,
+        "numbers_detected": extract_numbers(text),
+        "pan_candidates": extract_pan_like(text),
+        "aadhaar_candidates": extract_aadhaar_like(text)
+    }
+
+
+# Local testing only
+if __name__ == "__main__":
+    test_image = "uploads/ocr_test.jpg"
+    result = run_ocr_checks(test_image)
+    print(result)

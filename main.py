@@ -5,6 +5,7 @@ import uuid
 from PIL import Image
 
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -13,26 +14,32 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-UPLOAD_DIR = "uploads"
-ALLOWED_EXTENSIONS = ["jpg", "jpeg", "png"]
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+UPLOAD_DIR = os.path.join(BASE_DIR, "uploads")
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
+
 for folder in ["aadhaar", "pan", "selfie"]:
     os.makedirs(os.path.join(UPLOAD_DIR, folder), exist_ok=True)
 
 
 def validate_image(file: UploadFile):
-    ext = file.filename.split(".")[-1].lower()
+    if "." not in file.filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    ext = file.filename.rsplit(".", 1)[1].lower()
     if ext not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Invalid image format")
 
     try:
         Image.open(file.file).verify()
         file.file.seek(0)
-    except:
+    except Exception:
         raise HTTPException(status_code=400, detail="Corrupted image")
 
 
 def save_file(file: UploadFile, folder: str):
-    unique_name = f"{uuid.uuid4()}.{file.filename.split('.')[-1]}"
+    ext = file.filename.rsplit(".", 1)[1]
+    unique_name = f"{uuid.uuid4()}.{ext}"
     path = os.path.join(UPLOAD_DIR, folder, unique_name)
 
     with open(path, "wb") as f:

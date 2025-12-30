@@ -547,20 +547,20 @@
                     <div class="form-grid">
                         <div>
                             <label for="aadhaar">Aadhaar document</label>
-                            <input id="aadhaar" type="file" name="aadhaar" accept=".jpeg,image/jpeg" required>
-                            <div class="field-hint">JPEG format only. Front side scan recommended.</div>
+                            <input id="aadhaar" type="file" name="aadhaar" accept=".jpg,.jpeg,.png,image/jpeg,image/jpg,image/png" required>
+                            <div class="field-hint">JPG, JPEG, or PNG format. Front side scan recommended.</div>
                         </div>
 
                         <div>
                             <label for="pan">PAN document</label>
-                            <input id="pan" type="file" name="pan" accept=".jpeg,image/jpeg" required>
-                            <div class="field-hint">JPEG format only. High-resolution capture recommended.</div>
+                            <input id="pan" type="file" name="pan" accept=".jpg,.jpeg,.png,image/jpeg,image/jpg,image/png" required>
+                            <div class="field-hint">JPG, JPEG, or PNG format. High-resolution capture recommended.</div>
                         </div>
 
                         <div>
                             <label for="selfie">Selfie / liveness frame</label>
-                            <input id="selfie" type="file" name="selfie" accept=".jpeg,image/jpeg" required>
-                            <div class="field-hint">JPEG format only. Ensure good lighting and a clear face. AI will check for deepfakes.</div>
+                            <input id="selfie" type="file" name="selfie" accept=".jpg,.jpeg,.png,image/jpeg,image/jpg,image/png" required>
+                            <div class="field-hint">JPG, JPEG, or PNG format. Ensure good lighting and a clear face. AI will check for deepfakes.</div>
                         </div>
 
                         <div>
@@ -608,7 +608,7 @@
 
 <script>
 (function(){
-    const allowedExt = {"jpeg":true};
+    const allowedExt = {"jpg":true,"jpeg":true,"png":true};
     const fileInputs = [
         { id: "aadhaar", label: "Aadhaar" },
         { id: "pan", label: "PAN" },
@@ -665,7 +665,7 @@
                 ok:false,
                 kind:"format",
                 message:
-                    label + " must be a JPEG image (<code>.jpeg</code>). You selected: <code>" +
+                    label + " must be an image (<code>.jpg</code>, <code>.jpeg</code>, <code>.png</code>). You selected: <code>" +
                     (file.name || "unknown") +
                     "</code>"
             };
@@ -683,7 +683,7 @@
                 if(!r.ok){
                     showStatus("bad", r.message);
                     if(r.kind === "format"){
-                        popup("Wrong file format. Please upload JPEG only.");
+                        popup("Wrong file format. Please upload JPG/JPEG/PNG only.");
                     }
                     // Clear invalid selection so user must pick again
                     try{ el.value = ""; }catch(e){}
@@ -705,7 +705,7 @@
                 showStatus("bad", r2.message);
                 // Popup ONLY for wrong file format, not for missing files
                 if(r2.kind === "format"){
-                    popup("Wrong file format. Please upload JPEG only.");
+                    popup("Wrong file format. Please upload JPG/JPEG/PNG only.");
                 }
                 return;
             }
@@ -757,9 +757,9 @@
                 if(serverMsg === "Invalid file format" || serverMsg === "Invalid content type" || serverMsg === "Corrupted or non-image file"){
                     shouldPopup = true;
                     if(field){
-                        userMsg = "Wrong file format uploaded for " + field.toUpperCase() + ". Please upload JPEG only.";
+                        userMsg = "Wrong file format uploaded for " + field.toUpperCase() + ". Please upload JPG/JPEG/PNG only.";
                     } else {
-                        userMsg = "Wrong file format. Please upload JPEG only.";
+                        userMsg = "Wrong file format. Please upload JPG/JPEG/PNG only.";
                     }
                 } else {
                     // For mismatched uploads / OCR failures: show banner only (no popup)

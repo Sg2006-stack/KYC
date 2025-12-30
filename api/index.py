@@ -25,7 +25,7 @@ app.add_middleware(
 
 logger = logging.getLogger("kyc")
 
-_ALLOWED_EXTS = {"jpeg"}
+_ALLOWED_EXTS = {"jpg", "jpeg", "png"}
 
 
 # ---------- HELPERS ----------

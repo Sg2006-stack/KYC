@@ -21,7 +21,7 @@ app.add_middleware(
 # Paths
 BASE_DIR = Path(__file__).parent
 UPLOAD_DIR = BASE_DIR / "uploads"
-ALLOWED_EXTENSIONS = {"jpeg"}
+ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png"}
 
 for folder in ["aadhaar", "pan", "selfie"]:
     (UPLOAD_DIR / folder).mkdir(parents=True, exist_ok=True)

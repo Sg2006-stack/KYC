@@ -542,7 +542,6 @@
 
                 <form id="kycForm" enctype="multipart/form-data">
                     <div id="form-status" class="status-banner" role="status" aria-live="polite" style="margin-top:0;"></div>
-                    <div id="email-status" class="status-banner" role="status" aria-live="polite" style="margin-top:10px;"></div>
                     <div id="sms-status" class="status-banner" role="status" aria-live="polite" style="margin-top:10px;"></div>
 
                     <div class="form-grid">
@@ -562,12 +561,6 @@
                             <label for="selfie">Selfie / liveness frame</label>
                             <input id="selfie" type="file" name="selfie" accept=".jpg,.jpeg,.png,image/jpeg,image/jpg,image/png" required>
                             <div class="field-hint">JPG, JPEG, or PNG format. Ensure good lighting and a clear face. AI will check for deepfakes.</div>
-                        </div>
-
-                        <div>
-                            <label for="email">Email for verification report</label>
-                            <input id="email" type="text" name="email" placeholder="user@example.com" required>
-                            <div class="field-hint">ML confidence scores and extracted data will be sent here.</div>
                         </div>
 
                         <div>
@@ -725,13 +718,6 @@
         var resWrapper = document.getElementById("response-box-wrapper");
         if(resArea) resArea.style.display = "none";
         if(resWrapper) resWrapper.style.display = "none";
-
-        var emailStatus = document.getElementById("email-status");
-        if(emailStatus){
-            emailStatus.style.display="none";
-            emailStatus.className = "status-banner";
-            emailStatus.textContent = "";
-        }
 
         var formData = new FormData(e.target);
         var res;
